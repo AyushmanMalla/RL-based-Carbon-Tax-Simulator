@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carbon Tax Simulator</title>
+    <!-- Display photo background.jpeg as background and scale it correctly to all monitor size -->
+    <style>
+        body {
+            background-image: url('/static/background.jpeg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+    <style>
+        .slider {
+            width: 500px;
+            /* center */
+        }
+    </style>
+</head>
+<body>
+    <h1>Carbon Tax Simulator</h1>
+
+    <div class="center">
+        <div>
+            <input type="range" min="1" max="1000" value="500" class="slider" id="taxRate">
+            <p>Tax per Ton of CO2: <span id="taxRateValue"></span></p>
+        </div>
+
+        <div>
+            <input type="range" min="0.1" max="3" value="1.5" step="0.1" class="slider" id="electricityPrice">
+            <p>Electricity Price: <span id="electricityPriceValue"></span></p>
+        </div>
+
+        <button onclick="runSimulation()">Run Simulation</button>
+    </div>
+
+    <script>
+        var taxRateSlider = document.getElementById("taxRate");
+        var taxRateOutput = document.getElementById("taxRateValue");
+        taxRateOutput.innerHTML = taxRateSlider.value; // Display the default value
+
+        // Update the current slider value (each time you drag the slider handle)
+        taxRateSlider.oninput = function() {
+            taxRateOutput.innerHTML = this.value;
+        }
+
+        var electricityPriceSlider = document.getElementById("electricityPrice");
+        var electricityPriceOutput = document.getElementById("electricityPriceValue");
+        electricityPriceOutput.innerHTML = electricityPriceSlider.value; // Display the default value
+
+        // Update the current slider value (each time you drag the slider handle)
+        electricityPriceSlider.oninput = function() {
+            electricityPriceOutput.innerHTML = this.value;
+        }
+
+        function runSimulation() {
+            var taxRate = taxRateSlider.value;
+            var electricityPrice = electricityPriceSlider.value;
+
+            fetch('/run_simulation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ taxRate: taxRate, electricityPrice: electricityPrice }),
+            })
+            .then(response => response.text())
+            .then(data => alert(data));
+        }
+    </script>
+    
+</body>
+</html>

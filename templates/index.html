@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carbon Tax Simulator</title>
+    <!-- Display photo background.jpeg as background and scale it correctly to all monitor size -->
+    <style>
+        body::before {
+            content: "";
+            background-image: url('/static/background.jpeg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.85; /* Change the opacity level here */
+            z-index: -1; /* Ensure the background image is behind other content */
+        }
+    </style>
+    <style>
+        .slider {
+            width: 500px;
+            /* center */
+        }
+        .center {
+            height: auto;
+            width: fit-content;
+            position: relative;
+            border: 3px solid black;
+            padding: 1%;
+        }
+
+        .Carbon{
+            width: fit-content;
+            height: fit-content;
+        }
+        .description {
+            width: 500px;
+            padding-left: 2%;
+            background-color: black;
+            color: aliceblue;
+            padding: 2%;
+        }
+        .sim_details{
+            padding-inline-start: 10px;
+            font-size: larger;
+        }
+        .boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 50px;
+            margin-left: 100px;
+        }
+        .transparent-box {
+            width: 500px;
+            height: 500px;
+            background-color: rgba(0, 0, 0, 0.5); /* Change the color as per your requirement */
+            /* margin-bottom: 50px; */
+        }
+        .container {
+            display: flex;
+        }
+        .icon {
+            width: 100px;
+            height: 100px;
+        }
+        .icon-text {
+            display: flex;
+            align-items: center;
+        }
+
+        .text {
+            /* Your text styles here */
+            color: white;
+            font-size: larger;
+        }
+
+        .gap {
+            height: 10px;
+        }
+
+        .progress-bar {
+            /* Your progress bar styles here */
+            position: relative;
+            width: 500px;
+            height: 50px;
+        }
+
+        .progress_power {
+            width: 100%; /* Adjust this value to set the progress */
+            height: 100%;
+            background-color: yellow;
+            border-radius: 25px; /* Half of the height to create fully rounded edges */
+        }
+
+        .progress_car {
+            width: 100%; /* Adjust this value to set the progress */
+            height: 100%;
+            background-color: blue;
+            border-radius: 25px; /* Half of the height to create fully rounded edges */
+        }
+
+        .progress_surplus {
+            width: 100%; /* Adjust this value to set the progress */
+            height: 100%;
+            background-color: black;
+            border-radius: 25px; /* Half of the height to create fully rounded edges */
+        }
+
+        .icon-small {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            bottom: 10;
+        }
+
+        .left {
+            left: 0;
+        }
+
+        .right {
+            right: 0;
+        }
+
+        .button {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <h1 style="padding-left: 2%;">CARBON TAX SIMULATOR</h1>
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="center">
+                <div>
+                    <input type="range" min="1" max="1000" value="500" class="slider" id="taxRate_agrilculture">
+                    <p style="font-size: larger; padding-left: 100px;" class="Carbon"><b>Agrilculture Tax per Ton of CO2 ($): <b><span id="taxRate_agrilculture_Value"></span></p>
+                </div>
+                <div>
+                    <input type="range" min="1" max="1000" value="500" class="slider" id="taxRate_logistic">
+                    <p style="font-size: larger; padding-left: 100px;" class="Carbon"><b>Logistic Tax per Ton of CO2 ($): <b><span id="taxRate_logistic_Value"></span></p>
+                </div>
+                <div>
+                    <input type="range" min="1" max="1000" value="500" class="slider" id="taxRate_manufacturing">
+                    <p style="font-size: larger; padding-left: 100px;" class="Carbon"><b>Manufacturing Tax per Ton of CO2 ($): <b><span id="taxRate_manufacturing_Value"></span></p>
+                </div>
+                <div>
+                    <input type="range" min="1" max="1000" value="500" class="slider" id="taxRate_tech">
+                    <p style="font-size: larger; padding-left: 100px;" class="Carbon"><b>Tech Firm Tax per Ton of CO2 ($): <b><span id="taxRate_tech_Value"></span></p>
+                </div>
+
+                <div>
+                    <input type="range" min="0.1" max="3" value="1.5" step="0.1" class="slider" id="electricityPrice">
+                    <p style="font-size: larger; padding-left: 100px;" class="Electricity"><b>Electricity Price ($/KWh): </b><span id="electricityPriceValue"></span></p>
+                </div>
+
+                <button onclick="runSimulation()" class='button' style="background-color: black; color: aliceblue; height: 50px; width: 200px; ">Run Simulation</button>
+            </div>
+
+            <br><br>
+
+            <div class="description">
+                <h2 class="Simulation Description">Simulation Description<span class="cursor"></span></h2>
+                <p class="sim_details" id="simDetails"></p>
+            </div>
+        </div>
+        <div class="boxes">  
+            <div class="transparent-box">
+                <div class="icon-text">
+                    <img src="/static/agriculture.png" class="icon" alt="Agriculture Icon">
+                    <p class="text">Agriculture Simulation</p>
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Status</p>
+                <div class="progress-bar">
+                    <div class="progress_power"></div>
+                        <img src="/static/green_power.png" class="icon-small left" alt="Green Power Icon">
+                        <img src="/static/black_power.png" class="icon-small right" alt="Black Power Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Car Adoption</p>
+                <div class="progress-bar">
+                    <div class="progress_car"></div>
+                    <img src="/static/ev.png" class="icon-small left" alt="EV Icon">
+                    <img src="/static/fuel.png" class="icon-small right" alt="Fuel Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Deliver to Grid</p>
+                <div class="progress-bar">
+                    <div class="progress_surplus"></div>
+                    <img src="/static/electricity.png" class="icon-small left" alt="Power Surplus Icon">
+                </div>
+            </div>
+            <div class="transparent-box">
+                <div class="icon-text">
+                    <img src="/static/logistic.png" class="icon" alt="Agriculture Icon">
+                    <p class="text">Logistic Simulation</p>
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Status</p>
+                <div class="progress-bar">
+                    <div class="progress_power"></div>
+                        <img src="/static/green_power.png" class="icon-small left" alt="Green Power Icon">
+                        <img src="/static/black_power.png" class="icon-small right" alt="Black Power Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Car Adoption</p>
+                <div class="progress-bar">
+                    <div class="progress_car"></div>
+                    <img src="/static/ev.png" class="icon-small left" alt="EV Icon">
+                    <img src="/static/fuel.png" class="icon-small right" alt="Fuel Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Deliver to Grid</p>
+                <div class="progress-bar">
+                    <div class="progress_surplus"></div>
+                    <img src="/static/electricity.png" class="icon-small left" alt="Power Surplus Icon">
+                </div>
+            </div>
+            <div class="transparent-box">
+                <div class="icon-text">
+                    <img src="/static/manufacturing.png" class="icon" alt="Agriculture Icon">
+                    <p class="text">Manufacturing Simulation</p>
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Status</p>
+                <div class="progress-bar">
+                    <div class="progress_power"></div>
+                        <img src="/static/green_power.png" class="icon-small left" alt="Green Power Icon">
+                        <img src="/static/black_power.png" class="icon-small right" alt="Black Power Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Car Adoption</p>
+                <div class="progress-bar">
+                    <div class="progress_car"></div>
+                    <img src="/static/ev.png" class="icon-small left" alt="EV Icon">
+                    <img src="/static/fuel.png" class="icon-small right" alt="Fuel Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Deliver to Grid</p>
+                <div class="progress-bar">
+                    <div class="progress_surplus"></div>
+                    <img src="/static/electricity.png" class="icon-small left" alt="Power Surplus Icon">
+                </div>
+            </div>
+            <div class="transparent-box">
+                <div class="icon-text">
+                    <img src="/static/tech.png" class="icon" alt="Agriculture Icon">
+                    <p class="text">Tech Firm Simulation</p>
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Status</p>
+                <div class="progress-bar">
+                    <div class="progress_power"></div>
+                        <img src="/static/green_power.png" class="icon-small left" alt="Green Power Icon">
+                        <img src="/static/black_power.png" class="icon-small right" alt="Black Power Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Car Adoption</p>
+                <div class="progress-bar">
+                    <div class="progress_car"></div>
+                    <img src="/static/ev.png" class="icon-small left" alt="EV Icon">
+                    <img src="/static/fuel.png" class="icon-small right" alt="Fuel Icon">
+                </div>
+                <div class="gap"></div>
+                <p class="text">Power Deliver to Grid</p>
+                <div class="progress-bar">
+                    <div class="progress_surplus"></div>
+                    <img src="/static/electricity.png" class="icon-small left" alt="Power Surplus Icon">
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    
+    
+
+    <script>
+        var sliderAgrilculture = document.getElementById("taxRate_agrilculture");
+        var outputAgrilculture = document.getElementById("taxRate_agrilculture_Value");
+
+        var sliderLogistic = document.getElementById("taxRate_logistic");
+        var outputLogistic = document.getElementById("taxRate_logistic_Value");
+
+        var sliderManufacturing = document.getElementById("taxRate_manufacturing");
+        var outputManufacturing = document.getElementById("taxRate_manufacturing_Value");
+
+        var sliderTech = document.getElementById("taxRate_tech");
+        var outputTech = document.getElementById("taxRate_tech_Value");
+
+
+        // Display the default value
+        outputAgrilculture.innerHTML = sliderAgrilculture.value;
+        outputLogistic.innerHTML = sliderLogistic.value;
+        outputManufacturing.innerHTML = sliderManufacturing.value;
+        outputTech.innerHTML = sliderTech.value;
+
+        // Update the current slider value (each time you drag the slider handle)
+        sliderAgrilculture.oninput = function() {
+            outputAgrilculture.innerHTML = this.value;
+        }
+
+        sliderLogistic.oninput = function() {
+            outputLogistic.innerHTML = this.value;
+        }
+
+        sliderManufacturing.oninput = function() {
+            outputManufacturing.innerHTML = this.value;
+        }
+
+        sliderTech.oninput = function() {
+            outputTech.innerHTML = this.value;
+        }
+
+        var electricityPriceSlider = document.getElementById("electricityPrice");
+        var electricityPriceOutput = document.getElementById("electricityPriceValue");
+
+        electricityPriceOutput.innerHTML = electricityPriceSlider.value; // Display the default value
+
+        // Update the current slider value (each time you drag the slider handle)
+        electricityPriceSlider.oninput = function() {
+            electricityPriceOutput.innerHTML = this.value;
+        }
+
+        function runSimulation() {
+            var taxRate_agrilculture = sliderAgrilculture.value;
+            var taxRate_logistic = sliderLogistic.value;
+            var taxRate_manufacturing = sliderManufacturing.value;
+            var taxRate_tech = sliderTech.value;
+            var electricityPrice = electricityPriceSlider.value;
+
+            fetch('/run_simulation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ taxRate_agrilculture: taxRate_agrilculture, taxRate_logistic: taxRate_logistic, taxRate_manufacturing: taxRate_manufacturing, taxRate_tech: taxRate_tech, electricityPrice: electricityPrice}),
+            })
+            .then(response => response.text())
+            .then(data => alert(data));
+        }
+    </script>
+
+    <script>
+        const simText = "The Carbon Tax Simulator is an intuitive tool that leverages reinforcement learning (RL) models to simulate the effects of carbon taxes and electricity prices on environmental and financial metrics. With its user-friendly interface, you can adjust parameters, run simulations, and visualize real-time results.\n\n Powered by a robust RL backend, the simulator employs sophisticated algorithms to predict the outcomes of different policy scenarios accurately. Whether you're a policymaker, researcher, or concerned citizen, the Carbon Tax Simulator provides valuable insights into the potential impacts of carbon pricing initiatives on carbon emissions, energy consumption, and economic factors.\n\n CHEERS :)";
+
+        let index = 0;
+        const speed = 10; // Typing speed in milliseconds
+        const simDetails = document.getElementById("simDetails");
+
+        function typeWriter() {
+            if (index < simText.length) {
+                simDetails.innerHTML += simText.charAt(index);
+                index++;
+                setTimeout(typeWriter, speed);
+            }
+        }
+
+        typeWriter();
+    </script>
+    
+</body>
+</html>
